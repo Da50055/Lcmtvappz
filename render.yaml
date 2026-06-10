@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lcmtv-app
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # DATABASE_URL will be added manually in the Render dashboard

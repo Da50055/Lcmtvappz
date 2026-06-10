@@ -1,0 +1,23 @@
+{
+  "appId": "com.lcmtv.app2",
+  "appName": "LCM TV App",
+  "webDir": "www",
+  "server": {
+    "url": "https://lcmtvappz.onrender.com/",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": false,
+      "backgroundColor": "#0a0a0f",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

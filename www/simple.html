@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LCMTV - Live Stream</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- HLS.js for Fastpix/vMix streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Your custom styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="bg-blur blur-1"></div>
+    <div class="bg-blur blur-2"></div>
+
+    <div class="mobile-container">
+        <!-- Status Bar REMOVED - No more time, battery, or signal icons -->
+        
+        <div class="screens-wrapper">
+            <!-- Auth Screen -->
+            <div id="auth-screen" class="screen active">
+                <div class="auth-header">
+                    <img src="logo.png" alt="LCMTV Logo" class="company-logo" onerror="this.src='https://via.placeholder.com/100x100?text=LCMTV'">
+                    <h1 class="logo-text">LCM<span class="highlight">TV</span></h1>
+                    <p class="subtitle">Experience Premium Live Streaming Anywhere.</p>
+                </div>
+
+                <div class="auth-card glass-panel">
+                    <h2>Create Account</h2>
+                    <div id="auth-message" style="display: none;" class="message-popup"></div>
+                    <form id="register-form">
+                        <div class="input-group">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="fullname" placeholder="Full name" required autocomplete="name" inputmode="text">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-globe input-icon"></i>
+                            <select id="country" required>
+                                <option value="" disabled selected>Select Country</option>
+                                <option value="Angola">Angola</option>
+                                <option value="Botswana">Botswana</option>
+                                <option value="Burundi">Burundi</option>
+                                <option value="Cameroon">Cameroon</option>
+                                <option value="DR Congo">DR Congo</option>
+                                <option value="Eswatini">Eswatini</option>
+                                <option value="Ethiopia">Ethiopia</option>
+                                <option value="Ghana">Ghana</option>
+                                <option value="Kenya">Kenya</option>
+                                <option value="Lesotho">Lesotho</option>
+                                <option value="Malawi">Malawi</option>
+                                <option value="Mozambique">Mozambique</option>
+                                <option value="Namibia">Namibia</option>
+                                <option value="Nigeria">Nigeria</option>
+                                <option value="Rwanda">Rwanda</option>
+                                <option value="South Africa">South Africa</option>
+                                <option value="Switzerland">Switzerland</option>
+                                <option value="Tanzania">Tanzania</option>
+                                <option value="Uganda">Uganda</option>
+                                <option value="Zambia">Zambia</option>
+                                <option value="Zimbabwe">Zimbabwe</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="phone" placeholder="Phone number" required autocomplete="tel" inputmode="numeric">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="pin" placeholder="PIN (4 digits)" maxlength="4" pattern="\d{4}" required inputmode="numeric">
+                        </div>
+                        <button type="submit" class="btn-primary" id="register-btn">
+                            <span>Watch Live Now</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-footer">
+                    <p>By creating an account, you agree to our <a href="/privacy.html" target="_blank">Terms & Conditions</a>.</p>
+                </div>
+            </div>
+
+            <!-- Live Stream Screen -->
+            <div id="stream-screen" class="screen">
+                <div class="stream-header">
+                    <h2 class="logo-text-small">LCM<span class="highlight">TV</span></h2>
+                    <div class="live-badge">
+                        <span class="dot pulse"></span>LIVE
+                    </div>
+                    <div class="user-profile">
+                        <span id="user-initial">U</span>
+                    </div>
+                </div>
+
+                <div class="video-section">
+                    <div class="video-container glass-panel">
+                        <video id="video-player" playsinline autoplay muted></video>
+                        <div class="stream-overlay" id="stream-loading">
+                            <div class="spinner"></div>
+                            <p>Connecting to FastPix Bridge...</p>
+                            <span class="stream-key-hint">vMix Secured Source</span>
+                        </div>
+                        <div class="video-controls">
+                            <button id="mute-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
+                            <button id="fullscreen-btn" class="control-btn"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stream-info">
+                    <div class="stream-title-row">
+                        <h3 id="stream-title">Global Live Event HQ</h3>
+                        <p class="viewers"><i class="fas fa-eye"></i> <span id="viewer-count">0</span> watching</p>
+                    </div>
+                    <div class="interaction-bar">
+                        <button class="action-btn" id="like-btn"><i class="far fa-heart"></i> <span id="like-count">0</span></button>
+                        <button class="action-btn" id="share-btn"><i class="fas fa-share-nodes"></i></button>
+                        <button class="action-btn" id="info-btn"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                </div>
+
+                <div class="chat-container glass-panel">
+                    <div class="chat-header">
+                        <h4><i class="fas fa-comment-dots"></i> Live Chat</h4>
+                    </div>
+                    <div class="chat-messages" id="chat-box">
+                        <div class="msg system">Welcome to LCMTV Live Stream! Be respectful and enjoy the show.</div>
+                    </div>
+                    <form class="chat-input-area" id="chat-form">
+                        <input type="text" id="chat-input" placeholder="Say something in live chat..." maxlength="200" inputmode="text">
+                        <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+
+                <div class="bottom-nav">
+                    <div class="nav-item active" data-tab="live"><i class="fas fa-tv"></i><span>Live</span></div>
+                    <div class="nav-item" data-tab="vods"><i class="fas fa-video"></i><span>VODs</span></div>
+                    <div class="nav-item" data-tab="alerts"><i class="fas fa-bell"></i><span>Alerts</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // LCMTV - Dynamic Live Streaming App
+        (function() {
+            console.log('🚀 LCMTV App Initializing...');
+            
+            // DOM Elements
+            const authScreen = document.getElementById('auth-screen');
+            const streamScreen = document.getElementById('stream-screen');
+            const registerForm = document.getElementById('register-form');
+            const fullnameInput = document.getElementById('fullname');
+            const phoneInput = document.getElementById('phone');
+            const pinInput = document.getElementById('pin');
+            const countrySelect = document.getElementById('country');
+            const userInitial = document.getElementById('user-initial');
+            const video = document.getElementById('video-player');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const muteBtn = document.getElementById('mute-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const streamLoading = document.getElementById('stream-loading');
+            const viewerCountSpan = document.getElementById('viewer-count');
+            const likeBtn = document.getElementById('like-btn');
+            const likeCountSpan = document.getElementById('like-count');
+            const shareBtn = document.getElementById('share-btn');
+            const registerBtn = document.getElementById('register-btn');
+            const authMessage = document.getElementById('auth-message');
+            const streamTitle = document.getElementById('stream-title');
+            
+            // API URL
+            const API_URL = window.location.origin;
+            
+            // State variables
+            let socket = null;
+            let currentUser = '';
+            let currentUserId = null;
+            let isStreamActive = false;
+            let hls = null;
+            let likeCount = 0;
+            let viewerCount = 0;
+            
+            // FastPix Playback ID - UPDATE WITH YOUR ID
+            const FASTPIX_PLAYBACK_ID = '34c6616-4684-46bb-804c-8d69143a8a65';
+            const STREAM_URL = `https://stream.fastpix.io/${FASTPIX_PLAYBACK_ID}.m3u8`;
+            
+            // Check if user is already logged in (from localStorage)
+            function checkExistingSession() {
+                const savedUser = localStorage.getItem('lcmtv_user');
+                if (savedUser) {
+                    try {
+                        const user = JSON.parse(savedUser);
+                        currentUser = user.fullName.split(' ')[0];
+                        currentUserId = user.userId;
+                        if (userInitial) userInitial.textContent = currentUser.charAt(0).toUpperCase();
+                        
+                        // Auto-switch to stream screen
+                        if (authScreen) authScreen.classList.remove('active');
+                        if (streamScreen) streamScreen.classList.add('active');
+                        initLiveStream();
+                        initSocket();
+                        return true;
+                    } catch(e) {
+                        console.error('Session error:', e);
+                    }
+                }
+                return false;
+            }
+            
+            // Show message to user
+            function showMessage(message, isError = true) {
+                if (authMessage) {
+                    authMessage.textContent = message;
+                    authMessage.style.display = 'block';
+                    authMessage.className = isError ? 'message-popup error' : 'message-popup success';
+                    setTimeout(() => {
+                        authMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert(message);
+                }
+            }
+            
+            // Registration handler
+            if (registerForm) {
+                registerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const fullName = fullnameInput.value.trim();
+                    const country = countrySelect.value;
+                    const phone = phoneInput.value.trim();
+                    const pin = pinInput.value;
+                    
+                    // Validation
+                    if (!fullName) {
+                        showMessage('Please enter your full name');
+                        return;
+                    }
+                    if (!country) {
+                        showMessage('Please select your country');
+                        return;
+                    }
+                    if (!phone) {
+                        showMessage('Please enter your phone number');
+                        return;
+                    }
+                    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                        showMessage('PIN must be exactly 4 digits');
+                        return;
+                    }
+                    
+                    // Set user initial
+                    currentUser = fullName.split(' ')[0];
+                    if (userInitial) userInitial.textContent = currentUser.charAt(0).toUpperCase();
+                    
+                    // Show loading state
+                    if (registerBtn) {
+                        registerBtn.disabled = true;
+                        registerBtn.innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:auto;"></div>';
+                    }
+                    
+                    try {
+                        const response = await fetch(`${API_URL}/api/register`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fullName, country, phone, pin })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            // Save user session
+                            localStorage.setItem('lcmtv_user', JSON.stringify({
+                                fullName,
+                                userId: data.userId,
+                                phone
+                            }));
+                            currentUserId = data.userId;
+                            
+                            showMessage('Account created successfully! Redirecting to live stream...', false);
+                            
+                            // Switch screens
+                            setTimeout(() => {
+                                if (authScreen) authScreen.classList.remove('active');
+                                if (streamScreen) streamScreen.classList.add('active');
+                                initLiveStream();
+                                initSocket();
+                            }, 500);
+                        } else {
+                            showMessage(data.error || 'Registration failed. Please try again.');
+                            if (registerBtn) {
+                                registerBtn.disabled = false;
+                                registerBtn.innerHTML = '<span>Watch Live Now</span><i class="fas fa-arrow-right"></i>';
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Registration error:', err);
+                        showMessage('Network error. Please check your connection and try again.');
+                        if (registerBtn) {
+                            registerBtn.disabled = false;
+                            registerBtn.innerHTML = '<span>Watch Live Now</span><i class="fas fa-arrow-right"></i>';
+                        }
+                    }
+                });
+            }
+            
+            // Initialize HLS Live Stream
+            function initLiveStream() {
+                console.log('🎬 Initializing live stream...', STREAM_URL);
+                
+                if (!video) {
+                    console.error('Video element not found');
+                    return;
+                }
+                
+                // Hide loading overlay after stream starts
+                function hideLoading() {
+                    if (streamLoading) {
+                        streamLoading.style.opacity = '0';
+                        setTimeout(() => {
+                            streamLoading.style.display = 'none';
+                        }, 500);
+                    }
+                    isStreamActive = true;
+                }
+                
+                if (Hls.isSupported()) {
+                    if (hls) {
+                        hls.destroy();
+                    }
+                    hls = new Hls({
+                        maxBufferLength: 30,
+                        liveSyncDurationCount: 3,
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hls.loadSource(STREAM_URL);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        console.log('✅ HLS manifest loaded');
+                        video.play().catch(e => console.log('Autoplay prevented:', e));
+                        hideLoading();
+                    });
+                    hls.on(Hls.Events.ERROR, (event, data) => {
+                        console.error('HLS Error:', data);
+                        if (data.fatal) {
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    if (streamLoading) {
+                                        streamLoading.querySelector('p').textContent = "Reconnecting...";
+                                    }
+                                    hls.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    hls.recoverMediaError();
+                                    break;
+                                default:
+                                    console.error('Fatal error:', data);
+                                    break;
+                            }
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = STREAM_URL;
+                    video.addEventListener('loadedmetadata', () => {
+                        video.play();
+                        hideLoading();
+                    });
+                } else {
+                    console.error('HLS not supported');
+                    if (streamLoading) {
+                        streamLoading.querySelector('p').textContent = "Stream not supported in this browser";
+                    }
+                }
+                
+                // Video controls
+                if (muteBtn) {
+                    muteBtn.addEventListener('click', () => {
+                        video.muted = !video.muted;
+                        muteBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                    });
+                }
+                
+                if (fullscreenBtn) {
+                    fullscreenBtn.addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            video.requestFullscreen().catch(err => console.log(err));
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            }
+            
+            // Initialize Socket.io for real-time features
+            function initSocket() {
+                console.log('💬 Initializing real-time connection...');
+                socket = io();
+                
+                socket.on('connect', () => {
+                    console.log('✅ Socket connected');
+                    // Send user info to server
+                    if (currentUserId) {
+                        socket.emit('user_connected', { userId: currentUserId, userName: currentUser });
+                    }
+                });
+                
+                socket.on('viewer_count', (count) => {
+                    viewerCount = count;
+                    if (viewerCountSpan) viewerCountSpan.textContent = count;
+                });
+                
+                socket.on('chat_message', (data) => {
+                    addChatMessage(data.user, data.text, data.user === currentUser);
+                });
+                
+                socket.on('like_update', (count) => {
+                    likeCount = count;
+                    if (likeCountSpan) likeCountSpan.textContent = count;
+                });
+                
+                socket.on('stream_status', (data) => {
+                    if (data.isLive) {
+                        if (streamTitle) streamTitle.textContent = data.title || 'Global Live Event HQ';
+                    } else {
+                        if (streamTitle) streamTitle.textContent = 'Offline - Check back soon';
+                    }
+                });
+                
+                socket.on('disconnect', () => {
+                    console.log('⚠️ Socket disconnected');
+                });
+                
+                // Send chat message
+                if (chatForm) {
+                    chatForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const text = chatInput.value.trim();
+                        if (text && socket) {
+                            socket.emit('chat_message', { user: currentUser, text: text });
+                            chatInput.value = '';
+                            addChatMessage(currentUser, text, true);
+                        }
+                    });
+                }
+                
+                // Like button
+                if (likeBtn) {
+                    likeBtn.addEventListener('click', () => {
+                        if (socket) {
+                            socket.emit('send_like', { userId: currentUserId, userName: currentUser });
+                            // Visual feedback
+                            likeBtn.style.transform = 'scale(1.2)';
+                            setTimeout(() => {
+                                likeBtn.style.transform = 'scale(1)';
+                            }, 200);
+                        }
+                    });
+                }
+                
+                // Share button
+                if (shareBtn) {
+                    shareBtn.addEventListener('click', () => {
+                        if (navigator.share) {
+                            navigator.share({
+                                title: 'LCMTV',
+                                text: 'Watch live streams on LCMTV!',
+                                url: window.location.href
+                            }).catch(e => console.log('Share cancelled'));
+                        } else {
+                            // Fallback
+                            navigator.clipboard.writeText(window.location.href);
+                            showMessage('Link copied to clipboard!', false);
+                        }
+                    });
+                }
+            }
+            
+            // Add chat message to UI
+            function addChatMessage(user, text, isMe = false) {
+                if (!chatBox) return;
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg';
+                msgDiv.innerHTML = `<span class="user" style="color: ${isMe ? '#ff6600' : '#a78bfa'}">${escapeHtml(user)}:</span> ${escapeHtml(text)}`;
+                chatBox.appendChild(msgDiv);
+                msgDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                
+                // Limit chat messages (keep last 100)
+                while (chatBox.children.length > 100) {
+                    chatBox.removeChild(chatBox.firstChild);
+                }
+            }
+            
+            // Simple XSS prevention
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Dynamic stream title updater (can be updated from server)
+            function updateStreamTitle(title) {
+                if (streamTitle) streamTitle.textContent = title;
+            }
+            
+            // Check for existing session on load
+            if (!checkExistingSession()) {
+                console.log('No existing session, showing registration screen');
+            }
+            
+            // Handle bottom navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    const tab = item.dataset.tab;
+                    console.log('Tab selected:', tab);
+                    // Add future tab functionality here
+                });
+            });
+            
+            console.log('✅ LCMTV App Ready!');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCMTV - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f1a; color: #fff; }
+        .admin-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* Login Form */
+        .login-container { max-width: 400px; margin: 100px auto; background: #1a1a2a; padding: 40px; border-radius: 20px; text-align: center; }
+        .login-container input { width: 100%; padding: 12px; margin: 10px 0; background: #2a2a3a; border: 1px solid #ff6600; border-radius: 8px; color: white; font-size: 16px; }
+        .login-container button { width: 100%; padding: 12px; background: #ff6600; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        
+        /* Dashboard */
+        .dashboard { display: none; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #1a1a2a; border-radius: 12px; margin-bottom: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { padding: 12px 24px; background: #1a1a2a; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600; }
+        .tab-btn.active { background: #ff6600; }
+        .tab-content { display: none; background: #1a1a2a; padding: 20px; border-radius: 12px; }
+        .tab-content.active { display: block; }
+        
+        /* Upload Area */
+        .upload-area { border: 2px dashed #ff6600; border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { background: rgba(255,102,0,0.1); }
+        
+        /* Grids */
+        .gallery-grid, .programs-grid, .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
+        .gallery-item, .program-item, .schedule-item { background: #2a2a3a; border-radius: 12px; overflow: hidden; position: relative; }
+        .gallery-item img { width: 100%; height: 160px; object-fit: cover; }
+        .gallery-item video { width: 100%; height: 160px; object-fit: cover; }
+        .delete-btn { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background: #2a2a3a; border: 1px solid #3a3a4a; border-radius: 8px; color: white; }
+        .btn-primary { background: #ff6600; padding: 10px 20px; border: none; border-radius: 8px; color: white; cursor: pointer; }
+        .btn-danger { background: #dc2626; padding: 8px 16px; border: none; border-radius: 6px; color: white; cursor: pointer; }
+        .logout-btn { background: #dc2626; padding: 8px 16px; border: none; border-radius: 8px; color: white; cursor: pointer; }
+        
+        /* Messages */
+        .success-msg, .error-msg { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
+        .success-msg { background: #10b981; }
+        .error-msg { background: #ef4444; }
+        
+        .program-image { width: 100%; height: 120px; background: #1a1a2a; display: flex; align-items: center; justify-content: center; color: #ff6600; font-size: 48px; }
+        .program-image img { width: 100%; height: 100%; object-fit: cover; }
+        .program-info { padding: 12px; }
+        .program-info h4 { margin-bottom: 5px; }
+        .program-info p { font-size: 12px; color: #aaa; margin-bottom: 8px; }
+        
+        @media (max-width: 768px) {
+            .gallery-grid, .programs-grid, .schedule-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Login Form -->
+        <div id="loginForm" class="login-container">
+            <h2><i class="fas fa-lock"></i> Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-tv"></i> LCMTV Admin Panel</h1>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('gallery')"><i class="fas fa-images"></i> Gallery</button>
+                <button class="tab-btn" onclick="showTab('programs')"><i class="fas fa-film"></i> Programs</button>
+                <button class="tab-btn" onclick="showTab('schedule')"><i class="fas fa-calendar"></i> Schedule</button>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div id="galleryTab" class="tab-content active">
+                <div class="upload-area" onclick="document.getElementById('galleryInput').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 48px;"></i>
+                    <p>Click to upload images or videos</p>
+                    <input type="file" id="galleryInput" multiple accept="image/*,video/*" style="display: none;">
+                </div>
+                <div id="galleryGrid" class="gallery-grid"></div>
+            </div>
+
+            <!-- Programs Tab -->
+            <div id="programsTab" class="tab-content">
+                <h3>Add New Program</h3>
+                <div class="form-group">
+                    <label>Program Title</label>
+                    <input type="text" id="programTitle" placeholder="e.g., Youth Talk">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="programDesc" rows="2" placeholder="Program description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Icon Class (Font Awesome)</label>
+                    <input type="text" id="programIcon" placeholder="fa-comments">
+                </div>
+                <div class="form-group">
+                    <label>Duration (minutes)</label>
+                    <input type="number" id="programDuration" placeholder="30">
+                </div>
+                <div class="form-group">
+                    <label>Program Image URL (optional)</label>
+                    <input type="text" id="programImage" placeholder="https://... or /uploads/...">
+                </div>
+                <button class="btn-primary" onclick="addProgram()"><i class="fas fa-plus"></i> Add Program</button>
+                
+                <h3 style="margin-top: 30px;">Existing Programs</h3>
+                <div id="programsGrid" class="programs-grid"></div>
+            </div>
+
+            <!-- Schedule Tab -->
+            <div id="scheduleTab" class="tab-content">
+                <h3>Add Schedule Item</h3>
+                <div class="form-group">
+                    <label>Program</label>
+                    <select id="scheduleProgramSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label>Time</label>
+                    <input type="time" id="scheduleTime">
+                </div>
+                <div class="form-group">
+                    <label>Day</label>
+                    <select id="scheduleDay">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="addScheduleItem()"><i class="fas fa-plus"></i> Add Schedule</button>
+                
+                <h3 style="margin-top: 30px;">Current Schedule</h3>
+                <div id="scheduleGrid" class="schedule-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
